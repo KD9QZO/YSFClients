@@ -1,21 +1,38 @@
-Debug
-Release
-x64
+#
+# .gitignore
+#
+
+## BACKUP & TEMPORARY FILES ##
+
+*~
+*.bak
+*.tmp
+
+
+## BUILD ARTIFACTS ##
+
+Debug/
+Release/
+x64/
+**/Debug/
+**/Release/
+**/x64/
 *.o
 *.opendb
-*.bak
 *.obj
-*~
 *.sdf
 *.log
 *.zip
 *.exe
 *.user
 *.VC.db
-.vs
+.vs/
+**/.vs/
+.vscode/
+**/.vscode/
 DGIdGateway/DGIdGateway
 YSFGateway/YSFGateway
 YSFParrot/YSFParrot
 YSFReflector/YSFReflector
 GitVersion.h
-.vscode
+**/GitVersion.h
