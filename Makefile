@@ -1,6 +1,15 @@
-SUBDIRS = DGIdGateway YSFGateway YSFParrot YSFReflector
-CLEANDIRS = $(SUBDIRS:%=clean-%)
-INSTALLDIRS = $(SUBDIRS:%=install-%)
+# Makefile for YSFClients
+
+SUBDIRS := DGIdGateway \
+		YSFGateway \
+		YSFParrot \
+		YSFReflector
+
+CLEANDIRS := $(SUBDIRS:%=clean-%)
+
+INSTALLDIRS := $(SUBDIRS:%=install-%)
+
+
 
 all: $(SUBDIRS)
 
@@ -9,12 +18,12 @@ $(SUBDIRS):
 
 clean: $(CLEANDIRS)
 
-$(CLEANDIRS): 
+$(CLEANDIRS):
 	$(MAKE) -C $(@:clean-%=%) clean
 
 install: $(INSTALLDIRS)
 
-$(INSTALLDIRS): 
+$(INSTALLDIRS):
 	$(MAKE) -C $(@:install-%=%) install
 
 .PHONY: $(SUBDIRS) $(CLEANDIRS) $(INSTALLDIRS)
