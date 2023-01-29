@@ -1,3 +1,5 @@
+# YSFClients #
+
 These programs are clients for the System Fusion networking now built into the MMDVM Host.
 
 The Parrot can be used as a functional replacement for the built-in parrot that was removed from the MMDVM Host when the networking was added. The Parrot is very simple minded and can only handle one client at a time and is therefore not suitable for use as a shared resource via the Internet.
