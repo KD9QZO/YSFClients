@@ -36,3 +36,11 @@ YSFParrot/YSFParrot
 YSFReflector/YSFReflector
 GitVersion.h
 **/GitVersion.h
+
+
+## CMAKE ##
+
+build/
+build-*/
+**/build/
+**/build-*/
