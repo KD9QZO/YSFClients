@@ -2,6 +2,7 @@
 # Makefile for YSFGateway
 #
 
+PRJ := YSFGateway
 
 CC      := gcc
 CXX     := g++
@@ -18,8 +19,15 @@ INSTALL := install
 ECHO    := echo
 
 
-OPTLVL := 3
-DBGLVL := 0
+INSTALL_BASE    := /usr/local
+INSTALL_BIN     := $(INSTALL_BASE)/bin
+INSTALL_ETC     := $(INSTALL_BASE)/etc
+INSTALL_SHARE   := $(INSTALL_BASE)/share/YSFClients/YSFGateway
+INSTALL_SYSTEMD := /etc/systemd/system
+
+
+OPTLVL := 2
+DBGLVL := 2
 CSTD   := gnu11
 CXXSTD := gnu++14
 
@@ -30,8 +38,9 @@ CXXFLAGS := -g$(DBGLVL) -O$(OPTLVL) -Wall -DHAVE_LOG_H -std=$(CXXSTD) -pthread
 LIBS     := -lm -lpthread
 
 # Use the following CFLAGS and LIBS if you do want to use gpsd.
-#CFLAGS  = -g -O3 -Wall -DHAVE_LOG_H -DUSE_GPSD -std=c++0x -pthread
-#LIBS    = -lm -lpthread -lgps
+#CFLAGS   := -g$(DBGLVL) -O$(OPTLVL) -Wall -DHAVE_LOG_H -DUSE_GPSD -std=$(CSTD) -pthread
+#CXXFLAGS := -g$(DBGLVL) -o$(OPTLVL) -Wall -DHAVE_LOG_H -DUSE_GPSD -std=$(CXXSTD) -pthread
+#LIBS     := -lm -lpthread -lgps
 
 LDFLAGS := -g$(DBGLVL)
 
@@ -57,10 +66,10 @@ OBJECTS := APRSWriter.o \
 		YSFPayload.o \
 		YSFReflectors.o
 
-all:	YSFGateway
+all:	$(PRJ)
 
-YSFGateway:	$(OBJECTS)
-	$(CXX) $(OBJECTS) $(CXXFLAGS) $(LIBS) -o YSFGateway
+$(PRJ):	$(OBJECTS)
+	$(CXX) $(OBJECTS) $(CXXFLAGS) $(LIBS) -o $(PRJ)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -72,15 +81,21 @@ YSFGateway.o: GitVersion.h FORCE
 FORCE:
 
 install:
-	install -m 755 YSFGateway /usr/local/bin/
-	install -m 755 -d /usr/local/share/YSFClients/YSFGateway
-	install -m 755 YSFHostsUpdate.sh /usr/local/share/YSFClients/YSFGateway/YSFHostsUpdate.sh
-	install -m 644 YSFHosts.txt /usr/local/share/YSFClients/YSFGateway/YSFHosts.txt
-	install -m 644 YSFGateway.ini /usr/local/etc/YSFGateway.ini
-	install -m 644 systemd/ysfgateway.service /etc/systemd/system/ysfgateway.service
+	install -m 755 $(PRJ) $(INSTALL_BIN)/
+	install -m 755 -d $(INSTALL_SHARE)
+	install -m 755 YSFHostsUpdate.sh $(INSTALL_SHARE)/YSFHostsUpdate.sh
+	install -m 644 YSFHosts.txt $(INSTALL_SHARE)/YSFHosts.txt
+	install -m 644 FCSRooms.txt $(INSTALL_SHARE)/FCSRooms.txt
+	install -m 644 YSFGateway.ini $(INSTALL_ETC)/YSFGateway.ini
+	install -m 644 YSFGateway.ini $(INSTALL_SHARE)/YSFGateway.ini.sample
+	install -m 644 systemd/ysfgateway.service $(INSTALL_SYSTEMD)/ysfgateway.service
+	systemd daemon-reload
 
 clean:
-	$(RM) YSFGateway *.o *.d *.bak *~ GitVersion.h
+	$(RM) -f $(PRJ)
+	$(RM) -f *.o *.d
+	$(RM) -f *.bak *~
+	$(RM) -f GitVersion.h
 
 
 # Export the current git version if the index file exists, else 000...
