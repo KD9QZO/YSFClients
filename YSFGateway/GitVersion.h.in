@@ -1,0 +1,8 @@
+#ifndef GITVERSION_H_
+#define GITVERSION_H_
+
+
+const char *gitversion = "@GITVERSION@";
+
+
+#endif	/* !GITVERSION_H_ */
