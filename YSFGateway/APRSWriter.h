@@ -77,7 +77,15 @@ private:
 	bool              m_gpsdEnabled;
 	std::string       m_gpsdAddress;
 	std::string       m_gpsdPort;
+	/*! \brief A structure to hold the GPS data */
 	struct gps_data_t m_gpsdData;
+
+	/**
+	 * \brief A structure to hold the GPS fix data
+	 *
+	 * \note This needed to be added to support newer \b gpsd versions.
+	 */
+	struct gps_fix_t m_gpsdFix;
 #endif
 
 	void sendIdFrameFixed();

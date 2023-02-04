@@ -26,26 +26,27 @@
 #include <cmath>
 
 CAPRSWriter::CAPRSWriter(const std::string& callsign, const std::string& rptSuffix, const std::string& address, unsigned short port, const std::string& suffix, bool debug) :
-m_idTimer(1000U),
-m_callsign(callsign),
-m_debug(debug),
-m_txFrequency(0U),
-m_rxFrequency(0U),
-m_latitude(0.0F),
-m_longitude(0.0F),
-m_height(0),
-m_desc(),
-m_suffix(suffix),
-m_aprsAddr(),
-m_aprsAddrLen(0U),
-m_aprsSocket()
-#if defined(USE_GPSD)
-,m_gpsdEnabled(false),
-m_gpsdAddress(),
-m_gpsdPort(),
-m_gpsdData()
+		m_idTimer(1000U),
+		m_callsign(callsign),
+		m_debug(debug),
+		m_txFrequency(0U),
+		m_rxFrequency(0U),
+		m_latitude(0.0F),
+		m_longitude(0.0F),
+		m_height(0),
+		m_desc(),
+		m_suffix(suffix),
+		m_aprsAddr(),
+		m_aprsAddrLen(0U),
+#if !defined(USE_GPSD)
+		m_aprsSocket() {
+#else
+		m_aprsSocket(),
+		m_gpsdEnabled(false),
+		m_gpsdAddress(),
+		m_gpsdPort(),
+		m_gpsdData() {
 #endif
-{
 	assert(!callsign.empty());
 	assert(!address.empty());
 	assert(port > 0U);
@@ -59,26 +60,22 @@ m_gpsdData()
 		m_aprsAddrLen = 0U;
 }
 
-CAPRSWriter::~CAPRSWriter()
-{
+CAPRSWriter::~CAPRSWriter() {
 }
 
-void CAPRSWriter::setInfo(unsigned int txFrequency, unsigned int rxFrequency, const std::string& desc)
-{
+void CAPRSWriter::setInfo(unsigned int txFrequency, unsigned int rxFrequency, const std::string& desc) {
 	m_txFrequency = txFrequency;
 	m_rxFrequency = rxFrequency;
 	m_desc        = desc;
 }
 
-void CAPRSWriter::setStaticLocation(float latitude, float longitude, int height)
-{
+void CAPRSWriter::setStaticLocation(float latitude, float longitude, int height) {
 	m_latitude  = latitude;
 	m_longitude = longitude;
 	m_height    = height;
 }
 
-void CAPRSWriter::setGPSDLocation(const std::string& address, const std::string& port)
-{
+void CAPRSWriter::setGPSDLocation(const std::string& address, const std::string& port) {
 #if defined(USE_GPSD)
 	assert(!address.empty());
 	assert(!port.empty());
@@ -89,8 +86,7 @@ void CAPRSWriter::setGPSDLocation(const std::string& address, const std::string&
 #endif
 }
 
-bool CAPRSWriter::open()
-{
+bool CAPRSWriter::open() {
 	if (m_aprsAddrLen == 0U) {
 		LogError("Unable to lookup the adress of the APRS-IS server");
 		return false;
@@ -121,8 +117,7 @@ bool CAPRSWriter::open()
 	return true;
 }
 
-void CAPRSWriter::write(const unsigned char* source, const char* type, unsigned char radio, float fLatitude, float fLongitude)
-{
+void CAPRSWriter::write(const unsigned char* source, const char* type, unsigned char radio, float fLatitude, float fLongitude) {
 	assert(source != NULL);
 	assert(type != NULL);
 
@@ -188,8 +183,7 @@ void CAPRSWriter::write(const unsigned char* source, const char* type, unsigned 
 	m_aprsSocket.write((unsigned char*)output, (unsigned int)::strlen(output), m_aprsAddr, m_aprsAddrLen);
 }
 
-void CAPRSWriter::clock(unsigned int ms)
-{
+void CAPRSWriter::clock(unsigned int ms) {
 	m_idTimer.clock(ms);
 
 #if defined(USE_GPSD)
@@ -211,8 +205,7 @@ void CAPRSWriter::clock(unsigned int ms)
 #endif
 }
 
-void CAPRSWriter::close()
-{
+void CAPRSWriter::close() {
 	m_aprsSocket.close();
 
 #if defined(USE_GPSD)
@@ -223,8 +216,7 @@ void CAPRSWriter::close()
 #endif
 }
 
-void CAPRSWriter::sendIdFrameFixed()
-{
+void CAPRSWriter::sendIdFrameFixed() {
 	// Default values aren't passed on
 	if (m_latitude == 0.0F && m_longitude == 0.0F)
 		return;
@@ -288,12 +280,11 @@ void CAPRSWriter::sendIdFrameFixed()
 }
 
 #if defined(USE_GPSD)
-void CAPRSWriter::sendIdFrameMobile()
-{
+void CAPRSWriter::sendIdFrameMobile() {
 	if (!::gps_waiting(&m_gpsdData, 0))
 		return;
 
-#if GPSD_API_MAJOR_VERSION >= 7
+#if (GPSD_API_MAJOR_VERSION >= 7)
 	if (::gps_read(&m_gpsdData, NULL, 0) <= 0)
 		return;
 #else
@@ -302,7 +293,7 @@ void CAPRSWriter::sendIdFrameMobile()
 #endif
 
 
-	if (m_gpsdData.status != STATUS_FIX)
+	if (m_gpsdFix.status != STATUS_FIX)
 		return;
 
 	bool latlonSet   = (m_gpsdData.set & LATLON_SET) == LATLON_SET;
