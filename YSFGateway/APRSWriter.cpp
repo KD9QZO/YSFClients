@@ -25,7 +25,9 @@
 #include <cstring>
 #include <cmath>
 
-CAPRSWriter::CAPRSWriter(const std::string& callsign, const std::string& rptSuffix, const std::string& address, unsigned short port, const std::string& suffix, bool debug) :
+
+
+CAPRSWriter::CAPRSWriter(const std::string &callsign, const std::string &rptSuffix, const std::string &address, unsigned short port, const std::string &suffix, bool debug):
 		m_idTimer(1000U),
 		m_callsign(callsign),
 		m_debug(debug),
@@ -56,8 +58,9 @@ CAPRSWriter::CAPRSWriter(const std::string& callsign, const std::string& rptSuff
 		m_callsign.append(rptSuffix.substr(0U, 1U));
 	}
 
-	if (CUDPSocket::lookup(address, port, m_aprsAddr, m_aprsAddrLen) != 0)
+	if (CUDPSocket::lookup(address, port, m_aprsAddr, m_aprsAddrLen) != 0) {
 		m_aprsAddrLen = 0U;
+	}
 }
 
 CAPRSWriter::~CAPRSWriter() {
@@ -66,13 +69,13 @@ CAPRSWriter::~CAPRSWriter() {
 void CAPRSWriter::setInfo(unsigned int txFrequency, unsigned int rxFrequency, const std::string& desc) {
 	m_txFrequency = txFrequency;
 	m_rxFrequency = rxFrequency;
-	m_desc        = desc;
+	m_desc = desc;
 }
 
 void CAPRSWriter::setStaticLocation(float latitude, float longitude, int height) {
-	m_latitude  = latitude;
+	m_latitude = latitude;
 	m_longitude = longitude;
-	m_height    = height;
+	m_height = height;
 }
 
 void CAPRSWriter::setGPSDLocation(const std::string& address, const std::string& port) {
@@ -82,7 +85,7 @@ void CAPRSWriter::setGPSDLocation(const std::string& address, const std::string&
 
 	m_gpsdEnabled = true;
 	m_gpsdAddress = address;
-	m_gpsdPort    = port;
+	m_gpsdPort = port;
 #endif
 }
 
@@ -106,8 +109,9 @@ bool CAPRSWriter::open() {
 	}
 #endif
 	bool ret = m_aprsSocket.open(m_aprsAddr);
-	if (!ret)
+	if (!ret) {
 		return false;
+	}
 
 	LogMessage("Opened connection to the APRS Gateway");
 
@@ -117,7 +121,7 @@ bool CAPRSWriter::open() {
 	return true;
 }
 
-void CAPRSWriter::write(const unsigned char* source, const char* type, unsigned char radio, float fLatitude, float fLongitude) {
+void CAPRSWriter::write(const unsigned char *source, const char *type, unsigned char radio, float fLatitude, float fLongitude) {
 	assert(source != NULL);
 	assert(type != NULL);
 
@@ -150,35 +154,39 @@ void CAPRSWriter::write(const unsigned char* source, const char* type, unsigned 
 
 	char symbol;
 	switch (radio) {
-	case 0x24U:
-	case 0x28U:
-	case 0x30U:
-	case 0x33U:
-		symbol = '[';
-		break;
-	case 0x25U:
-	case 0x29U:
-	case 0x31U:
-		symbol = '>';
-		break;
-	case 0x20U:
-	case 0x26U:
-		symbol = 'r';
-		break;
-	default:
-		symbol = '-';
-		break;
+		case 0x24U:
+		case 0x28U:
+		case 0x30U:
+		case 0x33U:
+			symbol = '[';
+			break;
+
+		case 0x25U:
+		case 0x29U:
+		case 0x31U:
+			symbol = '>';
+			break;
+
+		case 0x20U:
+		case 0x26U:
+			symbol = 'r';
+			break;
+
+		default:
+			symbol = '-';
+			break;
 	}
 
 	char output[300U];
 	::sprintf(output, "%s>APDPRS,C4FM*,qAR,%s:!%s%c/%s%c%c %s via MMDVM\r\n",
-		callsign, m_callsign.c_str(),
-		lat, (fLatitude < 0.0F) ? 'S' : 'N',
-		lon, (fLongitude < 0.0F) ? 'W' : 'E',
-		symbol, type);
+			callsign, m_callsign.c_str(),
+			lat, (fLatitude < 0.0F) ? 'S' : 'N',
+			lon, (fLongitude < 0.0F) ? 'W' : 'E',
+			symbol, type);
 
-	if (m_debug)
+	if (m_debug) {
 		LogDebug("APRS ==> %s", output);
+	}
 
 	m_aprsSocket.write((unsigned char*)output, (unsigned int)::strlen(output), m_aprsAddr, m_aprsAddrLen);
 }
@@ -281,51 +289,56 @@ void CAPRSWriter::sendIdFrameFixed() {
 
 #if defined(USE_GPSD)
 void CAPRSWriter::sendIdFrameMobile() {
-	if (!::gps_waiting(&m_gpsdData, 0))
+	if (!::gps_waiting(&m_gpsdData, 0)) {
 		return;
+	}
 
 #if (GPSD_API_MAJOR_VERSION >= 7)
-	if (::gps_read(&m_gpsdData, NULL, 0) <= 0)
+	if (::gps_read(&m_gpsdData, NULL, 0) <= 0) {
 		return;
+	}
 #else
-	if (::gps_read(&m_gpsdData) <= 0)
+	if (::gps_read(&m_gpsdData) <= 0) {
 		return;
+	}
 #endif
 
 
-	if (m_gpsdFix.status != STATUS_FIX)
+	if (m_gpsdFix.status != STATUS_FIX) {
 		return;
+	}
 
-	bool latlonSet   = (m_gpsdData.set & LATLON_SET) == LATLON_SET;
+	bool latlonSet = (m_gpsdData.set & LATLON_SET) == LATLON_SET;
 	bool altitudeSet = (m_gpsdData.set & ALTITUDE_SET) == ALTITUDE_SET;
 	bool velocitySet = (m_gpsdData.set & SPEED_SET) == SPEED_SET;
-	bool bearingSet  = (m_gpsdData.set & TRACK_SET) == TRACK_SET;
+	bool bearingSet = (m_gpsdData.set & TRACK_SET) == TRACK_SET;
 
-	if (!latlonSet)
+	if (!latlonSet) {
 		return;
+	}
 
-	float rawLatitude  = float(m_gpsdData.fix.latitude);
+	float rawLatitude = float(m_gpsdData.fix.latitude);
 	float rawLongitude = float(m_gpsdData.fix.longitude);
-#if GPSD_API_MAJOR_VERSION >= 9
-	float rawAltitude  = float(m_gpsdData.fix.altMSL);
+#if (GPSD_API_MAJOR_VERSION >= 9)
+	float rawAltitude = float(m_gpsdData.fix.altMSL);
 #else
-	float rawAltitude  = float(m_gpsdData.fix.altitude);
+	float rawAltitude = float(m_gpsdData.fix.altitude);
 #endif
-	float rawVelocity  = float(m_gpsdData.fix.speed);
-	float rawBearing   = float(m_gpsdData.fix.track);
+	float rawVelocity = float(m_gpsdData.fix.speed);
+	float rawBearing = float(m_gpsdData.fix.track);
 
 	char desc[200U];
 	if (m_txFrequency != 0U) {
 		float offset = float(int(m_rxFrequency) - int(m_txFrequency)) / 1000000.0F;
 		::sprintf(desc, "MMDVM Voice %.5LfMHz %c%.4lfMHz%s%s",
-			(long double)(m_txFrequency) / 1000000.0F,
-			offset < 0.0F ? '-' : '+',
-			::fabs(offset), m_desc.empty() ? "" : ", ", m_desc.c_str());
+				(long double)(m_txFrequency) / 1000000.0F,
+				offset < 0.0F ? '-' : '+',
+				::fabs(offset), m_desc.empty() ? "" : ", ", m_desc.c_str());
 	} else {
 		::sprintf(desc, "MMDVM Voice%s%s", m_desc.empty() ? "" : ", ", m_desc.c_str());
 	}
 
-	const char* band = "4m";
+	const char *band = "4m";
 	if (m_txFrequency >= 1200000000U)
 		band = "1.2";
 	else if (m_txFrequency >= 420000000U)

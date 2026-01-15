@@ -162,7 +162,7 @@ int CYSFGateway::run()
 				return -1;
 			}
 
-			// Double check it worked (AKA Paranoia) 
+			// Double check it worked (AKA Paranoia)
 			if (setuid(0) != -1) {
 				::fprintf(stderr, "It's possible to regain root - something is wrong!, exiting\n");
 				return -1;
@@ -496,8 +496,7 @@ void CYSFGateway::createGPS()
 	m_gps = new CGPS(m_writer);
 }
 
-void CYSFGateway::createWiresX(CYSFNetwork* rptNetwork)
-{
+void CYSFGateway::createWiresX(CYSFNetwork *rptNetwork) {
 	assert(rptNetwork != NULL);
 
 	m_wiresX = new CWiresX(m_callsign, m_suffix, rptNetwork, *m_reflectors);

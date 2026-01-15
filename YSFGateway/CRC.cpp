@@ -61,8 +61,7 @@ const uint16_t CCITT16_TABLE2[] = {
 	0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0 };
 
 
-void CCRC::addCCITT16(unsigned char *in, unsigned int length)
-{
+void CCRC::addCCITT16(unsigned char *in, unsigned int length) {
 	assert(in != NULL);
 	assert(length > 2U);
 
@@ -82,8 +81,7 @@ void CCRC::addCCITT16(unsigned char *in, unsigned int length)
 	in[length - 2U] = crc8[1U];
 }
 
-bool CCRC::checkCCITT16(const unsigned char *in, unsigned int length)
-{
+bool CCRC::checkCCITT16(const unsigned char *in, unsigned int length) {
 	assert(in != NULL);
 	assert(length > 2U);
 
@@ -102,8 +100,7 @@ bool CCRC::checkCCITT16(const unsigned char *in, unsigned int length)
 	return crc8[0U] == in[length - 1U] && crc8[1U] == in[length - 2U];
 }
 
-unsigned char CCRC::addCRC(const unsigned char* in, unsigned int length)
-{
+unsigned char CCRC::addCRC(const unsigned char* in, unsigned int length) {
 	assert(in != NULL);
 
 	unsigned char crc = 0U;

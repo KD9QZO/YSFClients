@@ -1,28 +1,30 @@
 /*
- *   Copyright (C) 2012,2013,2015,2017,2018 by Jonathan Naylor G4KLX
- *   Copyright (C) 2011 by DV Developer Group. DJ0ABR
+ * Copyright (C) 2012,2013,2015,2017,2018 by Jonathan Naylor G4KLX
+ * Copyright (C) 2011 by DV Developer Group. DJ0ABR
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "DTMF.h"
 
 #include "Utils.h"
 
+
+
 const unsigned char DTMF_VD2_MASK[] = { 0xCCU, 0xCCU, 0xDDU, 0xDDU, 0xEEU, 0xEEU, 0xFFU, 0xFFU, 0xEEU, 0xEEU, 0xDDU, 0x99U, 0x98U };
-const unsigned char DTMF_VD2_SIG[]  = { 0x08U, 0x80U, 0xC9U, 0x10U, 0x26U, 0xA0U, 0xE3U, 0x31U, 0xE2U, 0xE6U, 0xD5U, 0x08U, 0x88U };
+const unsigned char DTMF_VD2_SIG[] = { 0x08U, 0x80U, 0xC9U, 0x10U, 0x26U, 0xA0U, 0xE3U, 0x31U, 0xE2U, 0xE6U, 0xD5U, 0x08U, 0x88U };
 
 const unsigned char DTMF_VD2_SYM_MASK[] = { 0x33U, 0x33U, 0x22U, 0x22U, 0x11U, 0x11U, 0x11U, 0x11U, 0x22U, 0x66U, 0x66U };
 const unsigned char DTMF_VD2_SYM0[] = { 0x33U, 0x11U, 0x22U, 0x02U, 0x00U, 0x00U, 0x01U, 0x11U, 0x00U, 0x04U, 0x62U };
@@ -44,22 +46,20 @@ const unsigned char DTMF_VD2_SYMH[] = { 0x00U, 0x22U, 0x00U, 0x20U, 0x11U, 0x11U
 
 const unsigned char VD2_SILENCE[] = { 0x7BU, 0xB2U, 0x8EU, 0x43U, 0x36U, 0xE4U, 0xA2U, 0x39U, 0x78U, 0x49U, 0x33U, 0x68U, 0x33U };
 
-CDTMF::CDTMF() :
-m_data(),
-m_command(),
-m_pressed(false),
-m_releaseCount(0U),
-m_pressCount(0U),
-m_lastChar(' ')
-{
+
+CDTMF::CDTMF():
+		m_data(),
+		m_command(),
+		m_pressed(false),
+		m_releaseCount(0U),
+		m_pressCount(0U),
+		m_lastChar(' ') {
 }
 
-CDTMF::~CDTMF()
-{
+CDTMF::~CDTMF() {
 }
 
-WX_STATUS CDTMF::decodeVDMode2(unsigned char* payload, bool end)
-{
+WX_STATUS CDTMF::decodeVDMode2(unsigned char *payload, bool end) {
 	assert(payload != NULL);
 
 	payload += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
@@ -73,26 +73,25 @@ WX_STATUS CDTMF::decodeVDMode2(unsigned char* payload, bool end)
 	return WXS_NONE;
 }
 
-WX_STATUS CDTMF::decodeVDMode2Slice(unsigned char* ambe, bool end)
-{
+WX_STATUS CDTMF::decodeVDMode2Slice(unsigned char *ambe, bool end) {
 	// DTMF begins with these byte values
 	if (!end && (ambe[0] & DTMF_VD2_MASK[0]) == DTMF_VD2_SIG[0] && (ambe[1] & DTMF_VD2_MASK[1]) == DTMF_VD2_SIG[1] &&
-		(ambe[2] & DTMF_VD2_MASK[2])   == DTMF_VD2_SIG[2]  && (ambe[3] & DTMF_VD2_MASK[3])   == DTMF_VD2_SIG[3] &&
-		(ambe[4] & DTMF_VD2_MASK[4])   == DTMF_VD2_SIG[4]  && (ambe[5] & DTMF_VD2_MASK[5])   == DTMF_VD2_SIG[5] &&
-		(ambe[6] & DTMF_VD2_MASK[6])   == DTMF_VD2_SIG[6]  && (ambe[7] & DTMF_VD2_MASK[7])   == DTMF_VD2_SIG[7] &&
-		(ambe[8] & DTMF_VD2_MASK[8])   == DTMF_VD2_SIG[8]  && (ambe[9] & DTMF_VD2_MASK[9])   == DTMF_VD2_SIG[9] &&
-		(ambe[10] & DTMF_VD2_MASK[10]) == DTMF_VD2_SIG[10] && (ambe[11] & DTMF_VD2_MASK[11]) == DTMF_VD2_SIG[11] &&
-		(ambe[12] & DTMF_VD2_MASK[12]) == DTMF_VD2_SIG[12]) {
-		unsigned char sym0  = ambe[0]  & DTMF_VD2_SYM_MASK[0];
-		unsigned char sym1  = ambe[1]  & DTMF_VD2_SYM_MASK[1];
-		unsigned char sym2  = ambe[2]  & DTMF_VD2_SYM_MASK[2];
-		unsigned char sym3  = ambe[3]  & DTMF_VD2_SYM_MASK[3];
-		unsigned char sym4  = ambe[4]  & DTMF_VD2_SYM_MASK[4];
-		unsigned char sym5  = ambe[5]  & DTMF_VD2_SYM_MASK[5];
-		unsigned char sym6  = ambe[8]  & DTMF_VD2_SYM_MASK[6];
-		unsigned char sym7  = ambe[9]  & DTMF_VD2_SYM_MASK[7];
-		unsigned char sym8  = ambe[10] & DTMF_VD2_SYM_MASK[8];
-		unsigned char sym9  = ambe[11] & DTMF_VD2_SYM_MASK[9];
+			(ambe[2] & DTMF_VD2_MASK[2]) == DTMF_VD2_SIG[2] && (ambe[3] & DTMF_VD2_MASK[3]) == DTMF_VD2_SIG[3] &&
+			(ambe[4] & DTMF_VD2_MASK[4]) == DTMF_VD2_SIG[4] && (ambe[5] & DTMF_VD2_MASK[5]) == DTMF_VD2_SIG[5] &&
+			(ambe[6] & DTMF_VD2_MASK[6]) == DTMF_VD2_SIG[6] && (ambe[7] & DTMF_VD2_MASK[7]) == DTMF_VD2_SIG[7] &&
+			(ambe[8] & DTMF_VD2_MASK[8]) == DTMF_VD2_SIG[8] && (ambe[9] & DTMF_VD2_MASK[9]) == DTMF_VD2_SIG[9] &&
+			(ambe[10] & DTMF_VD2_MASK[10]) == DTMF_VD2_SIG[10] && (ambe[11] & DTMF_VD2_MASK[11]) == DTMF_VD2_SIG[11] &&
+			(ambe[12] & DTMF_VD2_MASK[12]) == DTMF_VD2_SIG[12]) {
+		unsigned char sym0 = ambe[0] & DTMF_VD2_SYM_MASK[0];
+		unsigned char sym1 = ambe[1] & DTMF_VD2_SYM_MASK[1];
+		unsigned char sym2 = ambe[2] & DTMF_VD2_SYM_MASK[2];
+		unsigned char sym3 = ambe[3] & DTMF_VD2_SYM_MASK[3];
+		unsigned char sym4 = ambe[4] & DTMF_VD2_SYM_MASK[4];
+		unsigned char sym5 = ambe[5] & DTMF_VD2_SYM_MASK[5];
+		unsigned char sym6 = ambe[8] & DTMF_VD2_SYM_MASK[6];
+		unsigned char sym7 = ambe[9] & DTMF_VD2_SYM_MASK[7];
+		unsigned char sym8 = ambe[10] & DTMF_VD2_SYM_MASK[8];
+		unsigned char sym9 = ambe[11] & DTMF_VD2_SYM_MASK[9];
 		unsigned char sym10 = ambe[12] & DTMF_VD2_SYM_MASK[10];
 
 		char c = ' ';
@@ -164,41 +163,45 @@ WX_STATUS CDTMF::decodeVDMode2Slice(unsigned char* ambe, bool end)
 	}
 }
 
-WX_STATUS CDTMF::validate() const
-{
-	if (m_command.empty())
+WX_STATUS CDTMF::validate() const {
+	if (m_command.empty()) {
 		return WXS_NONE;
+	}
 
 	size_t length = m_command.length();
-	char first    = m_command.at(0U);
+	char first = m_command.at(0U);
 
-	if (length == 1U && first == '#') {
+	if ((length == 1U) && (first == '#')) {
 		return WXS_DISCONNECT;
-	} else if (length == 3U && first == 'A') {
+	} else if ((length == 3U) && (first == 'A')) {
 		for (unsigned int i = 1U; i < 3U; i++) {
 			char c = m_command.at(i);
-			if (c < '0' || c > '9')
+			if ((c < '0') || (c > '9')) {
 				return WXS_NONE;
+			}
 		}
 
 		return WXS_CONNECT_FCS;
 	} else if (length == 4U && first == 'A') {
 		for (unsigned int i = 1U; i < 4U; i++) {
 			char c = m_command.at(i);
-			if (c < '0' || c > '9')
+			if (c < '0' || c > '9') {
 				return WXS_NONE;
+			}
 		}
 
 		return WXS_CONNECT_FCS;
 	} else if (length == 6U && first == '#') {
 		for (unsigned int i = 1U; i < 6U; i++) {
 			char c = m_command.at(i);
-			if (c < '0' || c > '9')
+			if (c < '0' || c > '9') {
 				return WXS_NONE;
+			}
 		}
 
-		if (m_command == "#99999")
+		if (m_command == "#99999") {
 			return WXS_DISCONNECT;
+		}
 
 		return WXS_CONNECT_YSF;
 	}
@@ -206,19 +209,18 @@ WX_STATUS CDTMF::validate() const
 	return WXS_NONE;
 }
 
-std::string CDTMF::getReflector()
-{
+std::string CDTMF::getReflector() {
 	std::string command = m_command;
 	reset();
 
-	if (command.empty())
+	if (command.empty()) {
 		return "";
+	}
 
 	return command.substr(1U);
 }
 
-void CDTMF::reset()
-{
+void CDTMF::reset() {
 	m_data.clear();
 	m_command.clear();
 	m_pressed = false;

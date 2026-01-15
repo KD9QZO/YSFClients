@@ -28,6 +28,8 @@
 #include <cassert>
 #include <cstdlib>
 
+
+
 const unsigned char DX_REQ[]    = {0x5DU, 0x71U, 0x5FU};
 const unsigned char CONN_REQ[]  = {0x5DU, 0x23U, 0x5FU};
 const unsigned char DISC_REQ[]  = {0x5DU, 0x2AU, 0x5FU};
@@ -42,6 +44,8 @@ const unsigned char ALL_RESP[]  = {0x5DU, 0x46U, 0x5FU, 0x26U};
 const unsigned char DEFAULT_FICH[] = {0x20U, 0x00U, 0x01U, 0x00U};
 
 const unsigned char NET_HEADER[] = "YSFD                    ALL      ";
+
+
 
 CWiresX::CWiresX(const std::string& callsign, const std::string& suffix, CYSFNetwork* network, CYSFReflectors& reflectors) :
 m_callsign(callsign),
@@ -65,8 +69,7 @@ m_start(0U),
 m_search(),
 m_busy(false),
 m_busyTimer(3000U, 1U),
-m_bufferTX(10000U, "YSF Wires-X TX Buffer")
-{
+m_bufferTX(10000U, "YSF Wires-X TX Buffer") {
 	assert(network != NULL);
 
 	m_node = callsign;
@@ -88,8 +91,7 @@ m_bufferTX(10000U, "YSF Wires-X TX Buffer")
 	m_txWatch.start();
 }
 
-CWiresX::~CWiresX()
-{
+CWiresX::~CWiresX() {
 	delete[] m_csd3;
 	delete[] m_csd2;
 	delete[] m_csd1;
@@ -97,8 +99,7 @@ CWiresX::~CWiresX()
 	delete[] m_command;
 }
 
-void CWiresX::setInfo(const std::string& name, unsigned int txFrequency, unsigned int rxFrequency)
-{
+void CWiresX::setInfo(const std::string& name, unsigned int txFrequency, unsigned int rxFrequency) {
 	assert(txFrequency > 0U);
 	assert(rxFrequency > 0U);
 
@@ -153,40 +154,33 @@ void CWiresX::setInfo(const std::string& name, unsigned int txFrequency, unsigne
 		m_header[i + 14U] = m_node.at(i);
 }
 
-void CWiresX::setParrot(const std::string& address, unsigned short port)
-{
+void CWiresX::setParrot(const std::string& address, unsigned short port) {
 	m_reflectors.setParrot(address, port);
 }
 
-void CWiresX::setYSF2DMR(const std::string& address, unsigned short port)
-{
+void CWiresX::setYSF2DMR(const std::string& address, unsigned short port) {
 	m_reflectors.setYSF2DMR(address, port);
 }
 
-void CWiresX::setYSF2NXDN(const std::string& address, unsigned short port)
-{
+void CWiresX::setYSF2NXDN(const std::string& address, unsigned short port) {
 	m_reflectors.setYSF2NXDN(address, port);
 }
 
-void CWiresX::setYSF2P25(const std::string& address, unsigned short port)
-{
+void CWiresX::setYSF2P25(const std::string& address, unsigned short port) {
 	m_reflectors.setYSF2P25(address, port);
 }
 
-void CWiresX::addFCSRoom(const std::string& id, const std::string& name)
-{
+void CWiresX::addFCSRoom(const std::string& id, const std::string& name) {
 	m_reflectors.addFCSRoom(id, name);
 }
 
-bool CWiresX::start()
-{
+bool CWiresX::start() {
 	m_reflectors.reload();
 
 	return true;
 }
 
-WX_STATUS CWiresX::process(const unsigned char* data, const unsigned char* source, const CYSFFICH& fich, bool wiresXCommandPassthrough)
-{
+WX_STATUS CWiresX::process(const unsigned char* data, const unsigned char* source, const CYSFFICH& fich, bool wiresXCommandPassthrough) {
 	assert(data != NULL);
 	assert(source != NULL);
 
@@ -282,26 +276,22 @@ WX_STATUS CWiresX::process(const unsigned char* data, const unsigned char* sourc
 	return WXS_NONE;
 }
 
-CYSFReflector* CWiresX::getReflector() const
-{
+CYSFReflector* CWiresX::getReflector() const {
 	return m_reflector;
 }
 
-void CWiresX::setReflector(CYSFReflector* reflector)
-{
+void CWiresX::setReflector(CYSFReflector* reflector) {
 	m_reflector = reflector;
 }
 
-void CWiresX::processDX(const unsigned char* source)
-{
+void CWiresX::processDX(const unsigned char* source) {
 	::LogDebug("Received DX from %10.10s", source);
 
 	m_status = WXSI_DX;
 	m_timer.start();
 }
 
-void CWiresX::processCategory(const unsigned char* source, const unsigned char* data)
-{
+void CWiresX::processCategory(const unsigned char* source, const unsigned char* data) {
 	::LogDebug("Received CATEGORY request from %10.10s", source);
 
 	char buffer[6U];
@@ -333,8 +323,7 @@ void CWiresX::processCategory(const unsigned char* source, const unsigned char* 
 	m_timer.start();
 }
 
-void CWiresX::processAll(const unsigned char* source, const unsigned char* data)
-{
+void CWiresX::processAll(const unsigned char* source, const unsigned char* data) {
 	char buffer[4U];
 	::memcpy(buffer, data + 2U, 3U);
 	buffer[3U] = 0x00U;
@@ -364,8 +353,7 @@ void CWiresX::processAll(const unsigned char* source, const unsigned char* data)
 	}
 }
 
-WX_STATUS CWiresX::processConnect(const unsigned char* source, const unsigned char* data)
-{
+WX_STATUS CWiresX::processConnect(const unsigned char* source, const unsigned char* data) {
 	m_busy = true;
 	m_busyTimer.start();
 
@@ -390,8 +378,7 @@ WX_STATUS CWiresX::processConnect(const unsigned char* source, const unsigned ch
 	}
 }
 
-void CWiresX::processConnect(CYSFReflector* reflector)
-{
+void CWiresX::processConnect(CYSFReflector* reflector) {
 	m_busy = true;
 	m_busyTimer.start();
 
@@ -401,8 +388,7 @@ void CWiresX::processConnect(CYSFReflector* reflector)
 	m_timer.start();
 }
 
-void CWiresX::processDisconnect(const unsigned char* source)
-{
+void CWiresX::processDisconnect(const unsigned char* source) {
 	if (source != NULL)
 		::LogDebug("Received Disconect from %10.10s", source);
 
@@ -412,8 +398,7 @@ void CWiresX::processDisconnect(const unsigned char* source)
 	m_timer.start();
 }
 
-void CWiresX::clock(unsigned int ms)
-{
+void CWiresX::clock(unsigned int ms) {
 	unsigned char buffer[200U];
 
 	m_reflectors.clock(ms);
@@ -466,8 +451,7 @@ void CWiresX::clock(unsigned int ms)
 	}
 }
 
-void CWiresX::createReply(const unsigned char* data, unsigned int length, CYSFNetwork* network)
-{
+void CWiresX::createReply(const unsigned char* data, unsigned int length, CYSFNetwork* network) {
 	assert(data != NULL);
 	assert(length > 0U);
 
@@ -530,32 +514,34 @@ void CWiresX::createReply(const unsigned char* data, unsigned int length, CYSFNe
 	unsigned int offset = 0U;
 	while (offset < length) {
 		switch (fn) {
-		case 0U: {
-				ft = calculateFT(length, offset);
-				payload.writeDataFRModeData1(m_csd1, buffer + 35U);
-				payload.writeDataFRModeData2(m_csd2, buffer + 35U);
-			}
-			break;
-		case 1U:
-			payload.writeDataFRModeData1(m_csd3, buffer + 35U);
-			if (bn == 0U) {
+			case 0U: {
+					ft = calculateFT(length, offset);
+					payload.writeDataFRModeData1(m_csd1, buffer + 35U);
+					payload.writeDataFRModeData2(m_csd2, buffer + 35U);
+				}
+				break;
+
+			case 1U:
+				payload.writeDataFRModeData1(m_csd3, buffer + 35U);
+				if (bn == 0U) {
+					payload.writeDataFRModeData2(data + offset, buffer + 35U);
+					offset += 20U;
+				} else {
+					// All subsequent entries start with 0x00U
+					unsigned char temp[20U];
+					::memcpy(temp + 1U, data + offset, 19U);
+					temp[0U] = 0x00U;
+					payload.writeDataFRModeData2(temp, buffer + 35U);
+					offset += 19U;
+				}
+				break;
+
+			default:
+				payload.writeDataFRModeData1(data + offset, buffer + 35U);
+				offset += 20U;
 				payload.writeDataFRModeData2(data + offset, buffer + 35U);
 				offset += 20U;
-			} else {
-				// All subsequent entries start with 0x00U
-				unsigned char temp[20U];
-				::memcpy(temp + 1U, data + offset, 19U);
-				temp[0U] = 0x00U;
-				payload.writeDataFRModeData2(temp, buffer + 35U);
-				offset += 19U;
-			}
-			break;
-		default:
-			payload.writeDataFRModeData1(data + offset, buffer + 35U);
-			offset += 20U;
-			payload.writeDataFRModeData2(data + offset, buffer + 35U);
-			offset += 20U;
-			break;
+				break;
 		}
 
 		fich.setFT(ft);
@@ -585,13 +571,12 @@ void CWiresX::createReply(const unsigned char* data, unsigned int length, CYSFNe
 	payload.writeDataFRModeData1(m_csd1, buffer + 35U);
 	payload.writeDataFRModeData2(m_csd2, buffer + 35U);
 
-	buffer[34U] = seqNo | 0x01U;
+	buffer[34U] = (seqNo | 0x01U);
 
 	writeData(buffer, network, isYSF2XX);
 }
 
-void CWiresX::writeData(const unsigned char* buffer, CYSFNetwork* network, bool isYSF2XX)
-{
+void CWiresX::writeData(const unsigned char* buffer, CYSFNetwork* network, bool isYSF2XX) {
 	if (isYSF2XX) {
 		// Send YSF2XXX Wires-X reply directly to the network
 		network->write(buffer);
@@ -603,27 +588,37 @@ void CWiresX::writeData(const unsigned char* buffer, CYSFNetwork* network, bool 
 	}
 }
 
-unsigned char CWiresX::calculateFT(unsigned int length, unsigned int offset) const
-{
+unsigned char CWiresX::calculateFT(unsigned int length, unsigned int offset) const {
 	length -= offset;
 
-	if (length > 220U) return 7U;
+	if (length > 220U) {
+		return 7U;
+	}
 
-	if (length > 180U) return 6U;
+	if (length > 180U) {
+		return 6U;
+	}
 
-	if (length > 140U) return 5U;
+	if (length > 140U) {
+		return 5U;
+	}
 
-	if (length > 100U) return 4U;
+	if (length > 100U) {
+		return 4U;
+	}
 
-	if (length > 60U)  return 3U;
+	if (length > 60U) {
+		return 3U;
+	}
 
-	if (length > 20U)  return 2U;
+	if (length > 20U) {
+		return 2U;
+	}
 
 	return 1U;
 }
 
-void CWiresX::sendDXReply()
-{
+void CWiresX::sendDXReply() {
 	unsigned char data[150U];
 	::memset(data, 0x00U, 150U);
 	::memset(data, ' ', 128U);
@@ -695,8 +690,7 @@ void CWiresX::sendDXReply()
 	m_seqNo++;
 }
 
-void CWiresX::sendConnect(CYSFNetwork* network)
-{
+void CWiresX::sendConnect(CYSFNetwork* network) {
 	unsigned char data[20U];
 	::memset(data, 0x00U, 20U);
 	::memset(data, ' ', 16U);
@@ -716,8 +710,7 @@ void CWiresX::sendConnect(CYSFNetwork* network)
 	m_seqNo++;
 }
 
-void CWiresX::sendConnectReply()
-{
+void CWiresX::sendConnectReply() {
 	assert(m_reflector != NULL);
 
 	unsigned char data[110U];
@@ -769,8 +762,7 @@ void CWiresX::sendConnectReply()
 	m_seqNo++;
 }
 
-void CWiresX::sendDisconnectReply()
-{
+void CWiresX::sendDisconnectReply() {
 	unsigned char data[110U];
 	::memset(data, 0x00U, 110U);
 	::memset(data, ' ', 90U);
@@ -806,8 +798,7 @@ void CWiresX::sendDisconnectReply()
 	m_seqNo++;
 }
 
-void CWiresX::sendAllReply()
-{
+void CWiresX::sendAllReply() {
 	if (m_start == 0U)
 		m_reflectors.reload();
 
@@ -867,7 +858,7 @@ void CWiresX::sendAllReply()
 	}
 
 	unsigned int k = 1029U - offset;
-	for(unsigned int i = 0U; i < k; i++)
+	for (unsigned int i = 0U; i < k; i++)
 		data[i + offset] = 0x20U;
 
 	offset += k;
@@ -882,8 +873,7 @@ void CWiresX::sendAllReply()
 	m_seqNo++;
 }
 
-void CWiresX::sendSearchReply()
-{
+void CWiresX::sendSearchReply() {
 	if (m_search.size() == 0U) {
 		sendSearchNotFoundReply();
 		return;
@@ -915,10 +905,14 @@ void CWiresX::sendSearchReply()
 	data[22U] = '1';
 
 	unsigned int total = search.size();
-	if (total > 999U) total = 999U;
+	if (total > 999U) {
+		total = 999U;
+	}
 
 	unsigned int n = search.size() - m_start;
-	if (n > 20U) n = 20U;
+	if (n > 20U) {
+		n = 20U;
+	}
 
 	::sprintf((char*)(data + 23U), "%02u%03u", n, total);
 
@@ -951,7 +945,7 @@ void CWiresX::sendSearchReply()
 	}
 
 	unsigned int k = 1029U - offset;
-	for(unsigned int i = 0U; i < k; i++)
+	for (unsigned int i = 0U; i < k; i++)
 		data[i + offset] = 0x20U;
 
 	offset += k;
@@ -966,8 +960,7 @@ void CWiresX::sendSearchReply()
 	m_seqNo++;
 }
 
-void CWiresX::sendSearchNotFoundReply()
-{
+void CWiresX::sendSearchNotFoundReply() {
 	unsigned char data[70U];
 	::memset(data, 0x00U, 70U);
 
@@ -1004,8 +997,7 @@ void CWiresX::sendSearchNotFoundReply()
 	m_seqNo++;
 }
 
-void CWiresX::sendCategoryReply()
-{
+void CWiresX::sendCategoryReply() {
 	unsigned char data[1100U];
 	::memset(data, 0x00U, 1100U);
 
@@ -1058,7 +1050,7 @@ void CWiresX::sendCategoryReply()
 	}
 
 	unsigned int k = 1029U - offset;
-	for(unsigned int i = 0U; i < k; i++)
+	for (unsigned int i = 0U; i < k; i++)
 		data[i + offset] = 0x20U;
 
 	offset += k;
@@ -1073,7 +1065,6 @@ void CWiresX::sendCategoryReply()
 	m_seqNo++;
 }
 
-bool CWiresX::isBusy() const
-{
+bool CWiresX::isBusy() const {
 	return m_busy;
 }

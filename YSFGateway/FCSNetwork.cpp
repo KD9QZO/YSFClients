@@ -25,27 +25,28 @@
 #include <cassert>
 #include <cstring>
 
-const char* FCS_VERSION = "MMDVM";
+
+const char *FCS_VERSION = "MMDVM";
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CFCSNetwork::CFCSNetwork(unsigned short port, const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, const std::string& locator, unsigned int id, bool debug) :
-m_socket(port),
-m_debug(debug),
-m_addr(),
-m_addrLen(),
-m_ping(NULL),
-m_options(NULL),
-m_opt(),
-m_info(NULL),
-m_reflector(),
-m_print(),
-m_buffer(1000U, "FCS Network Buffer"),
-m_n(0U),
-m_pingTimer(1000U, 0U, 800U),
-m_resetTimer(1000U, 1U),
-m_state(FCS_UNLINKED)
-{
+
+CFCSNetwork::CFCSNetwork(unsigned short port, const std::string &callsign, unsigned int rxFrequency, unsigned int txFrequency, const std::string &locator, unsigned int id, bool debug):
+		m_socket(port),
+		m_debug(debug),
+		m_addr(),
+		m_addrLen(),
+		m_ping(NULL),
+		m_options(NULL),
+		m_opt(),
+		m_info(NULL),
+		m_reflector(),
+		m_print(),
+		m_buffer(1000U, "FCS Network Buffer"),
+		m_n(0U),
+		m_pingTimer(1000U, 0U, 800U),
+		m_resetTimer(1000U, 1U),
+		m_state(FCS_UNLINKED) {
 	m_info = new unsigned char[100U];
 	::sprintf((char*)m_info, "%9u%9u%-6.6s%-12.12s%7u", rxFrequency, txFrequency, locator.c_str(), FCS_VERSION, id);
 	::memset(m_info + 43U, ' ', 57U);
@@ -119,8 +120,8 @@ bool CFCSNetwork::writeLink(const std::string& reflector)
 {
 	if (m_state != FCS_LINKED) {
 		std::string name = reflector.substr(0U, 6U);
-		
-		if (m_addresses.count(name) == 0U) {			
+
+		if (m_addresses.count(name) == 0U) {
 			char url[30U];
 			::sprintf(url, "%s.xreflector.net", name.c_str());
 
