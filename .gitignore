@@ -7,6 +7,7 @@
 *~
 *.bak
 *.tmp
+*.orig
 
 
 ## BUILD ARTIFACTS ##
@@ -44,3 +45,9 @@ build/
 build-*/
 **/build/
 **/build-*/
+
+
+## IDEs ##
+
+.idea/
+.vscode/
