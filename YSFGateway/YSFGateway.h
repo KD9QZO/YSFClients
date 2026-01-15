@@ -32,16 +32,17 @@
 
 #include <string>
 
+
 enum LINK_TYPE {
 	LINK_NONE,
 	LINK_YSF,
 	LINK_FCS
 };
 
-class CYSFGateway
-{
+
+class CYSFGateway {
 public:
-	CYSFGateway(const std::string& configFile);
+	CYSFGateway(const std::string &configFile);
 	~CYSFGateway();
 
 	int run();
@@ -69,12 +70,13 @@ private:
 
 	void startupLinking();
 	std::string calculateLocator();
-	void processWiresX(const unsigned char* buffer, const CYSFFICH& fich, bool dontProcessWiresXLocal, bool wiresXCommandPassthrough);
-	void processDTMF(unsigned char* buffer, unsigned char dt);
-	void createWiresX(CYSFNetwork* rptNetwork);
+	void processWiresX(const unsigned char *buffer, const CYSFFICH &fich, bool dontProcessWiresXLocal, bool wiresXCommandPassthrough);
+	void processDTMF(unsigned char *buffer, unsigned char dt);
+	void createWiresX(CYSFNetwork *rptNetwork);
 	void createGPS();
-	void readFCSRoomsFile(const std::string& filename);
+	void readFCSRoomsFile(const std::string &filename);
 	void processRemoteCommands();
 };
+
 
 #endif

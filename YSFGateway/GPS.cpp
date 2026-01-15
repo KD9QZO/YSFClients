@@ -27,32 +27,35 @@
 #include <cassert>
 #include <cstring>
 
-const unsigned char SHRT_GPS[] = {0x22U, 0x62U};
-const unsigned char LONG_GPS[] = {0x47U, 0x64U};
 
-CGPS::CGPS(CAPRSWriter* writer) :
-m_writer(writer),
-m_buffer(NULL),
-m_sent(false)
-{
+
+const unsigned char SHRT_GPS[] = { 0x22U, 0x62U };
+const unsigned char LONG_GPS[] = { 0x47U, 0x64U };
+
+
+
+CGPS::CGPS(CAPRSWriter *writer):
+		m_writer(writer),
+		m_buffer(NULL),
+		m_sent(false) {
 	assert(writer != NULL);
 
 	m_buffer = new unsigned char[300U];
 }
 
-CGPS::~CGPS()
-{
+CGPS::~CGPS() {
 	delete[] m_buffer;
 }
 
-void CGPS::data(const unsigned char* source, const unsigned char* data, const CYSFFICH& fich)
-{
-	if (m_sent)
+void CGPS::data(const unsigned char *source, const unsigned char *data, const CYSFFICH &fich) {
+	if (m_sent) {
 		return;
+	}
 
 	unsigned char fi = fich.getFI();
-	if (fi != YSF_FI_COMMUNICATIONS)
+	if (fi != YSF_FI_COMMUNICATIONS) {
 		return;
+	}
 
 	CYSFPayload payload;
 
@@ -61,12 +64,14 @@ void CGPS::data(const unsigned char* source, const unsigned char* data, const CY
 	unsigned char ft = fich.getFT();
 
 	if (dt == YSF_DT_VD_MODE1) {
-		if (fn == 0U || fn == 1U || fn == 2U)
+		if ((fn == 0U) || (fn == 1U) || (fn == 2U)) {
 			return;
+		}
 
 		bool valid = payload.readVDMode1Data(data, m_buffer + (fn - 3U) * 20U);
-		if (!valid)
+		if (!valid) {
 			return;
+		}
 
 		if (fn == ft) {
 			bool valid = false;
@@ -97,12 +102,14 @@ void CGPS::data(const unsigned char* source, const unsigned char* data, const CY
 			}
 		}
 	} else if (dt == YSF_DT_VD_MODE2) {
-		if (fn != 6U && fn != 7U)
+		if ((fn != 6U) && (fn != 7U)) {
 			return;
+		}
 
 		bool valid = payload.readVDMode2Data(data, m_buffer + (fn - 6U) * 10U);
-		if (!valid)
+		if (!valid) {
 			return;
+		}
 
 		if (fn == ft) {
 			bool valid = false;
@@ -111,8 +118,9 @@ void CGPS::data(const unsigned char* source, const unsigned char* data, const CY
 			for (unsigned int i = (fn - 5U) * 10U; i > 0U; i--) {
 				if (m_buffer[i] == 0x03U) {
 					unsigned char crc = CCRC::addCRC(m_buffer, i + 1U);
-					if (crc == m_buffer[i + 1U])
+					if (crc == m_buffer[i + 1U]) {
 						valid = true;
+					}
 					break;
 				}
 			}
@@ -134,45 +142,45 @@ void CGPS::data(const unsigned char* source, const unsigned char* data, const CY
 	}
 }
 
-void CGPS::reset()
-{
+void CGPS::reset() {
 	m_sent = false;
 }
 
-void CGPS::transmitGPS(const unsigned char* source)
-{
+void CGPS::transmitGPS(const unsigned char *source) {
 	assert(m_writer != NULL);
 
 	// We don't know who its from!
-	if (::memcmp(source, "          ", YSF_CALLSIGN_LENGTH) == 0)
+	if (::memcmp(source, "          ", YSF_CALLSIGN_LENGTH) == 0) {
 		return;
-
-	for (unsigned int i = 5U; i < 11U; i++) {
-		unsigned char b = m_buffer[i] & 0xF0U;
-		if (b != 0x50U && b != 0x30U)
-			return;                                // error/unknown
 	}
 
-	unsigned int tens = m_buffer[5U] & 0x0FU;
-	unsigned int units = m_buffer[6U] & 0x0FU;
+	for (unsigned int i = 5U; i < 11U; i++) {
+		unsigned char b = (m_buffer[i] & 0xF0U);
+		if ((b != 0x50U) && (b != 0x30U)) {
+			return;								// error/unknown
+		}
+	}
+
+	unsigned int tens = (m_buffer[5U] & 0x0FU);
+	unsigned int units = (m_buffer[6U] & 0x0FU);
 	unsigned int lat_deg = (tens * 10U) + units;
-	if (tens > 9U || units > 9U || lat_deg > 89U)
+	if ((tens > 9U) || (units > 9U) || (lat_deg > 89U))
 		return;                                // error/unknown
 
-	tens = m_buffer[7U] & 0x0FU;
-	units = m_buffer[8U] & 0x0FU;
+	tens = (m_buffer[7U] & 0x0FU);
+	units = (m_buffer[8U] & 0x0FU);
 	unsigned int lat_min = (tens * 10U) + units;
-	if (tens > 9U || units > 9U || lat_min > 59U)
+	if ((tens > 9U) || (units > 9U) || (lat_min > 59U))
 		return;                                // error/unknown
 
-	tens = m_buffer[9U] & 0x0FU;
-	units = m_buffer[10U] & 0x0FU;
+	tens = (m_buffer[9U] & 0x0FU);
+	units = (m_buffer[10U] & 0x0FU);
 	unsigned int lat_min_frac = (tens * 10U) + units;
-	if (tens > 9U || units > 10U || lat_min_frac > 99U)    // units > 10 ??? .. more buggy Yaesu firmware ?
+	if ((tens > 9U) || (units > 10U) || (lat_min_frac > 99U))    // units > 10 ??? .. more buggy Yaesu firmware ?
 		return;                                // error/unknown
 
 	int lat_dir;
-	unsigned char b = m_buffer[8U] & 0xF0U;                            // currently a guess
+	unsigned char b = (m_buffer[8U] & 0xF0U);                            // currently a guess
 	if (b == 0x50U)
 		lat_dir = 1;                           // N
 	else if (b == 0x30U)
@@ -181,22 +189,22 @@ void CGPS::transmitGPS(const unsigned char* source)
 		return;                                // error/unknown
 
 	unsigned int lon_deg;
-	b = m_buffer[9U] & 0xF0U;
+	b = (m_buffer[9U] & 0xF0U);
 	if (b == 0x50U) {
-	    // lon deg 0 to 9, and 100 to 179
+		// lon deg 0 to 9, and 100 to 179
 		b = m_buffer[11U];
-		if (b >= 0x76U && b <= 0x7FU)
+		if ((b >= 0x76U) && (b <= 0x7FU))
 			lon_deg = b - 0x76U;               // 0 to 9
-		else if (b >= 0x6CU && b <= 0x75U)
+		else if ((b >= 0x6CU) && (b <= 0x75U))
 			lon_deg = 100U + (b - 0x6CU);      // 100 to 109
-		else if (b >= 0x26U && b <= 0x6BU)
+		else if ((b >= 0x26U) && (b <= 0x6BU))
 			lon_deg = 110U + (b - 0x26U);      // 110 to 179
 		else
 			return;                            // error/unknown
 	} else if (b == 0x30U) {
-	    // lon deg 10 to 99
+		// lon deg 10 to 99
 		b = m_buffer[11U];
-		if (b >= 0x26U && b <= 0x7FU)
+		if ((b >= 0x26U) && (b <= 0x7FU))
 			lon_deg = 10U + (b - 0x26U);       // 10 to 99
 		else
 			return;                            // error/unknown
@@ -206,34 +214,35 @@ void CGPS::transmitGPS(const unsigned char* source)
 
 	unsigned int lon_min;
 	b = m_buffer[12U];
-	if (b >= 0x58U && b <= 0x61U)
+	if ((b >= 0x58U) && (b <= 0x61U))
 		lon_min = b - 0x58U;                   // 0 to 9
-	else if (b >= 0x26U && b <= 0x57U)
+	else if ((b >= 0x26U) && (b <= 0x57U))
 		lon_min = 10U + (b - 0x26U);            // 10 to 59
 	else
 		return;                                // error/unknown
 
 	unsigned int lon_min_frac;
 	b = m_buffer[13U];
-	if (b >= 0x1CU && b <= 0x7FU)
+	if ((b >= 0x1CU) && (b <= 0x7FU))
 		lon_min_frac = b - 0x1CU;
 	else
 		return;                                // error/unknown
 
 	int lon_dir;
-	b = m_buffer[10U] & 0xF0U;
-	if (b == 0x30U)
-		lon_dir = 1;                           // E
-	else if (b == 0x50U)
-		lon_dir = -1;                          // W
-	else
-		return;                                // error/unknown
+	b = (m_buffer[10U] & 0xF0U);
+	if (b == 0x30U) {
+		lon_dir = 1;							// E
+	} else if (b == 0x50U) {
+		lon_dir = -1;							// W
+	} else {
+		return;									// error/unknown
+	}
 
 	unsigned int lat_sec = lat_min_frac * 60U;
-	lat_sec = (lat_sec + (lat_sec % 100U)) / 100U;    // with rounding
+	lat_sec = (lat_sec + (lat_sec % 100U)) / 100U;	// with rounding
 
 	unsigned int lon_sec = lon_min_frac * 60U;
-	lon_sec = (lon_sec + (lon_sec % 100U)) / 100U;    // with rounding
+	lon_sec = (lon_sec + (lon_sec % 100U)) / 100U;	// with rounding
 
 	// >= 0 is north, < 0 is south
 	float latitude = lat_deg + ((lat_min + ((float)lat_min_frac * 0.01F)) * (1.0F / 60.0F));
@@ -246,36 +255,45 @@ void CGPS::transmitGPS(const unsigned char* source)
 	char radio[10U];
 
 	switch (m_buffer[4U]) {
-	case 0x20U:
-		::strcpy(radio, "DR-2X");
-		break;
-	case 0x24U:
-		::strcpy(radio, "FT-1D");
-		break;
-	case 0x25U:
-		::strcpy(radio, "FTM-400D");
-		break;
-	case 0x26U:
-		::strcpy(radio, "DR-1X");
-		break;
-	case 0x28U:
-		::strcpy(radio, "FT-2D");
-		break;
-	case 0x29U:
-		::strcpy(radio, "FTM-100D");
-		break;
-	case 0x31U:  
-		::strcpy(radio, "FTM-300D");
-		break;					
-	case 0x30U:
-		::strcpy(radio, "FT-3D");
-		break;
-	case 0x33U:
-		::strcpy(radio, "FT-5D");
-		break;
-	default:
-		::sprintf(radio, "0x%02X", m_buffer[4U]);
-		break;
+		case 0x20U:
+			::strcpy(radio, "DR-2X");
+			break;
+
+		case 0x24U:
+			::strcpy(radio, "FT-1D");
+			break;
+
+		case 0x25U:
+			::strcpy(radio, "FTM-400D");
+			break;
+
+		case 0x26U:
+			::strcpy(radio, "DR-1X");
+			break;
+
+		case 0x28U:
+			::strcpy(radio, "FT-2D");
+			break;
+
+		case 0x29U:
+			::strcpy(radio, "FTM-100D");
+			break;
+
+		case 0x31U:
+			::strcpy(radio, "FTM-300D");
+			break;
+
+		case 0x30U:
+			::strcpy(radio, "FT-3D");
+			break;
+
+		case 0x33U:
+			::strcpy(radio, "FT-5D");
+			break;
+
+		default:
+			::sprintf(radio, "0x%02X", m_buffer[4U]);
+			break;
 	}
 
 	LogMessage("GPS Position from %10.10s of radio=%s lat=%f long=%f", source, radio, latitude, longitude);

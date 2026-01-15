@@ -25,22 +25,24 @@
 #include <cassert>
 #include <cstring>
 
+
+
 const unsigned int BUFFER_LENGTH = 200U;
 
-CYSFNetwork::CYSFNetwork(const std::string& address, unsigned short port, const std::string& callsign, bool debug) :
-m_socket(address, port),
-m_debug(debug),
-m_addr(),
-m_addrLen(0U),
-m_poll(NULL),
-m_options(NULL),
-m_opt(),
-m_unlink(NULL),
-m_buffer(1000U, "YSF Network Buffer"),
-m_pollTimer(1000U, 5U),
-m_name(),
-m_linked(false)
-{
+
+CYSFNetwork::CYSFNetwork(const std::string &address, unsigned short port, const std::string &callsign, bool debug):
+		m_socket(address, port),
+		m_debug(debug),
+		m_addr(),
+		m_addrLen(0U),
+		m_poll(NULL),
+		m_options(NULL),
+		m_opt(),
+		m_unlink(NULL),
+		m_buffer(1000U, "YSF Network Buffer"),
+		m_pollTimer(1000U, 5U),
+		m_name(),
+		m_linked(false) {
 	m_poll = new unsigned char[14U];
 	::memcpy(m_poll + 0U, "YSFP", 4U);
 
@@ -60,20 +62,19 @@ m_linked(false)
 	}
 }
 
-CYSFNetwork::CYSFNetwork(unsigned short port, const std::string& callsign, bool debug) :
-m_socket(port),
-m_debug(debug),
-m_addr(),
-m_addrLen(0U),
-m_poll(NULL),
-m_options(NULL),
-m_opt(),
-m_unlink(NULL),
-m_buffer(1000U, "YSF Network Buffer"),
-m_pollTimer(1000U, 5U),
-m_name(),
-m_linked(false)
-{
+CYSFNetwork::CYSFNetwork(unsigned short port, const std::string &callsign, bool debug):
+		m_socket(port),
+		m_debug(debug),
+		m_addr(),
+		m_addrLen(0U),
+		m_poll(NULL),
+		m_options(NULL),
+		m_opt(),
+		m_unlink(NULL),
+		m_buffer(1000U, "YSF Network Buffer"),
+		m_pollTimer(1000U, 5U),
+		m_name(),
+		m_linked(false) {
 	m_poll = new unsigned char[14U];
 	::memcpy(m_poll + 0U, "YSFP", 4U);
 
@@ -93,15 +94,13 @@ m_linked(false)
 	}
 }
 
-CYSFNetwork::~CYSFNetwork()
-{
+CYSFNetwork::~CYSFNetwork() {
 	delete[] m_poll;
 	delete[] m_unlink;
 	delete[] m_options;
 }
 
-bool CYSFNetwork::open()
-{
+bool CYSFNetwork::open() {
 	if (m_addrLen == 0U) {
 		LogError("Unable to resolve the address of the YSF network");
 		return false;
@@ -112,12 +111,11 @@ bool CYSFNetwork::open()
 	return m_socket.open(m_addr);
 }
 
-bool CYSFNetwork::setDestination(const std::string& name, const sockaddr_storage& addr, unsigned int addrLen)
-{
-	m_name    = name;
-	m_addr    = addr;
+bool CYSFNetwork::setDestination(const std::string &name, const sockaddr_storage &addr, unsigned int addrLen) {
+	m_name = name;
+	m_addr = addr;
 	m_addrLen = addrLen;
-	m_linked  = false;
+	m_linked = false;
 
 	bool ret = open();
 	if (ret) {
@@ -128,10 +126,9 @@ bool CYSFNetwork::setDestination(const std::string& name, const sockaddr_storage
 	}
 }
 
-void CYSFNetwork::clearDestination()
-{
+void CYSFNetwork::clearDestination() {
 	m_addrLen = 0U;
-	m_linked  = false;
+	m_linked = false;
 
 	m_pollTimer.stop();
 

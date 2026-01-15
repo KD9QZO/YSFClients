@@ -16,29 +16,32 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#if !defined(GPS_H)
-#define	GPS_H
+#if !defined(GPS_H_)
+#define GPS_H_
 
 #include "APRSWriter.h"
 #include "YSFFICH.h"
 
 #include <string>
 
+
+
 class CGPS {
 public:
-	CGPS(CAPRSWriter* writer);
+	CGPS(CAPRSWriter *writer);
 	~CGPS();
 
-	void data(const unsigned char* source, const unsigned char* data, const CYSFFICH& fich);
+	void data(const unsigned char *source, const unsigned char *data, const CYSFFICH &fich);
 
 	void reset();
 
 private:
-	CAPRSWriter*   m_writer;
-	unsigned char* m_buffer;
-	bool           m_sent;
+	CAPRSWriter *m_writer;
+	unsigned char *m_buffer;
+	bool m_sent;
 
-	void transmitGPS(const unsigned char* source);
+	void transmitGPS(const unsigned char *source);
 };
 
-#endif
+
+#endif	/* !GPS_H_ */
